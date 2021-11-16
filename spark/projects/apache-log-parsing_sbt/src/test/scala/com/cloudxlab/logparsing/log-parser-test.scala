@@ -20,4 +20,13 @@ class LogParserSpec extends FlatSpec {
     var line2 = "::1 - - [11/May/2015:06:44:40 -0400] \"OPTIONS * HTTP/1.0\" 200 125 \"-\" \"Apache/2.4.7 (Ubuntu) PHP/5.5.9-1ubuntu4.7 OpenSSL/1.0.1f (internal dummy connection)\""
     assert(!utils.containsIP(line2))
   }
+  
+  "checkFirstOctetDecimal" should "Check if First Octet is less than 127" in {
+    val utils = new Utils
+    
+    assert(utils.checkFirstOctetDecimal("121.242.40.10 "))
+    assert(!utils.checkFirstOctetDecimal("212.242.40.10 "))
+    assert(!utils.checkFirstOctetDecimal("239.242.40.10 "))
+    assert(!utils.checkFirstOctetDecimal("191.242.40.10 ")) 
+  }
 }

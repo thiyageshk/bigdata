@@ -4,6 +4,8 @@ import org.apache.spark._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
+import org.apache.commons.math3.geometry.spherical.oned.ArcsSet.Split
+import java.util.function.ToIntFunction
 
 class Utils extends Serializable {
     val PATTERN = """^(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] "(\S+) (\S+)(.*)" (\d{3}) (\S+)""".r
@@ -19,11 +21,15 @@ class Utils extends Serializable {
     def gettop10(accessLogs:RDD[String], sc:SparkContext, topn:Int):Array[(String,Int)] = {
         //Keep only the lines which have IP
         var ipaccesslogs = accessLogs.filter(containsIP)
-        var cleanips = ipaccesslogs.map(extractIP(_))
+        var cleanips = ipaccesslogs.map(extractIP(_)).filter(checkFirstOctetDecimal)
         var ips_tuples = cleanips.map((_,1));
         var frequencies = ips_tuples.reduceByKey(_ + _);
         var sortedfrequencies = frequencies.sortBy(x => x._2, false)
         return sortedfrequencies.take(topn)
+    }
+    
+    def checkFirstOctetDecimal(ip: String): Boolean = {
+        ip.split('.')(0).toInt < 127
     }
 }
 
